@@ -1,4 +1,4 @@
-const APP_VERSION = "2026.07.04.5";
+const APP_VERSION = "2026.07.04.6";
 
 const DEFAULT_SETTINGS = {
   baseDay: 1,
@@ -169,6 +169,16 @@ function getAllowedDate(year, monthIndex) {
   };
 }
 
+function getNextAllowedDate(today = new Date()) {
+  const current = getAllowedDate(today.getFullYear(), today.getMonth());
+  if (ymd(today) <= ymd(current.date)) {
+    return current;
+  }
+
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  return getAllowedDate(nextMonth.getFullYear(), nextMonth.getMonth());
+}
+
 function isSameDate(a, b) {
   return ymd(a) === ymd(b);
 }
@@ -197,16 +207,15 @@ function resetToday() {
 
 function getTodayStatus() {
   const today = new Date();
-  const allowed = getAllowedDate(today.getFullYear(), today.getMonth());
-  const allowedToday = isSameDate(today, allowed.date);
+  const thisMonthAllowed = getAllowedDate(today.getFullYear(), today.getMonth());
+  const allowedToday = isSameDate(today, thisMonthAllowed.date);
+  const allowed = allowedToday ? thisMonthAllowed : getNextAllowedDate(today);
   const unlocked = getUnlockUntil() > Date.now();
   return { today, allowed, allowedToday, unlocked };
 }
 
 function render() {
-  const today = new Date();
-  const allowed = getAllowedDate(today.getFullYear(), today.getMonth());
-  const allowedToday = isSameDate(today, allowed.date);
+  const { today, allowed, allowedToday } = getTodayStatus();
   const unlocked = getUnlockUntil() > Date.now();
   const remainingMs = Math.max(0, getUnlockUntil() - Date.now());
 
@@ -246,8 +255,9 @@ function render() {
 function renderMonths(today) {
   const list = $("month-list");
   list.innerHTML = "";
+  const startMonth = getNextAllowedDate(today).date;
   for (let i = 0; i < 6; i += 1) {
-    const month = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    const month = new Date(startMonth.getFullYear(), startMonth.getMonth() + i, 1);
     const allowed = getAllowedDate(month.getFullYear(), month.getMonth());
     const item = document.createElement("div");
     item.className = "month-item";
