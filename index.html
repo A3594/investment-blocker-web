@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>월 1회 투자 확인 잠금</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="status-pill" id="status-pill">확인 중</div>
+      <h1 id="page-title">월 1회만 투자 확인</h1>
+      <p class="lead">
+        미래에셋은 매월 1일 기준으로 딱 하루만 확인합니다.
+        1일이 주말이나 공휴일이면 다음 평일 하루만 열립니다.
+      </p>
+    </section>
+
+    <section class="decision-panel" aria-label="이번 달 허용일">
+      <div class="date-card">
+        <span class="label">이번 달 허용일</span>
+        <strong id="allowed-date">-</strong>
+        <span id="allowed-reason" class="reason">계산 중</span>
+      </div>
+      <div class="today-card" id="today-card">
+        <span class="label">오늘 상태</span>
+        <strong id="today-status">-</strong>
+        <span id="today-message" class="reason">잠시만요</span>
+      </div>
+    </section>
+
+    <section class="lock-panel" aria-label="차단 규칙">
+      <h2>오늘 열어도 되는가?</h2>
+      <p id="rule-text" class="rule-text">날짜를 계산하고 있습니다.</p>
+      <div class="action-row">
+        <button id="unlock-button" class="primary-button" type="button">허용일 확인 절차 시작</button>
+        <button id="reset-button" class="ghost-button" type="button">오늘 기록 초기화</button>
+      </div>
+      <div id="unlock-box" class="unlock-box" hidden>
+        <p>
+          지금은 월 1회 점검일입니다. 매매가 아니라 리밸런싱인지 먼저 확인하세요.
+        </p>
+        <label>
+          집에 보관한 문장 입력
+          <input id="passphrase-input" type="password" autocomplete="off" placeholder="집에 둔 문장을 입력" />
+        </label>
+        <button id="confirm-button" class="primary-button" type="button">10분 확인 허용</button>
+        <p id="unlock-feedback" class="feedback"></p>
+      </div>
+    </section>
+
+    <section class="calendar-panel" aria-label="앞으로의 허용일">
+      <h2>앞으로 6개월 허용일</h2>
+      <div id="month-list" class="month-list"></div>
+    </section>
+
+    <section class="settings-panel" aria-label="설정">
+      <details>
+        <summary>차단 설정</summary>
+        <div class="settings-grid">
+          <label>
+            확인 기준일
+            <input id="base-day-input" type="number" min="1" max="28" value="1" />
+          </label>
+          <label>
+            확인 가능 시간
+            <select id="window-minutes-input">
+              <option value="10">10분</option>
+              <option value="20">20분</option>
+              <option value="30">30분</option>
+            </select>
+          </label>
+          <label>
+            해제 문장
+            <input id="passphrase-setting" type="password" autocomplete="new-password" placeholder="집에 보관할 긴 문장" />
+          </label>
+        </div>
+        <button id="save-settings" class="ghost-button" type="button">설정 저장</button>
+        <p class="setting-note">
+          해제 문장은 폰에 저장되므로 완전한 보안용 비밀번호가 아닙니다.
+          충동을 늦추는 용도로 쓰고, 실제 차단은 AppBlock/Stay Focused에서 설정하세요.
+        </p>
+      </details>
+      <details>
+        <summary>휴일 추가</summary>
+        <div class="settings-grid">
+          <label>
+            날짜
+            <input id="holiday-date-input" type="date" />
+          </label>
+          <label>
+            이름
+            <input id="holiday-name-input" type="text" placeholder="회사 휴무, 임시공휴일 등" />
+          </label>
+        </div>
+        <button id="add-holiday" class="ghost-button" type="button">휴일 추가</button>
+        <div id="custom-holiday-list" class="holiday-list"></div>
+      </details>
+    </section>
+
+    <section class="guide-panel" aria-label="안드로이드 차단앱 설정">
+      <h2>안드로이드 차단앱에 넣을 규칙</h2>
+      <ol>
+        <li>미래에셋 앱과 증권 관련 브라우저 주소를 평소에는 차단합니다.</li>
+        <li>매월 이 화면의 허용일 하루만 AppBlock/Stay Focused에서 임시 해제합니다.</li>
+        <li>해제 PIN은 집에 종이로 보관합니다.</li>
+        <li>허용일에도 장중 매매가 아니라 저녁 10분 점검만 합니다.</li>
+      </ol>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
