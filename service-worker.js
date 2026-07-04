@@ -1,4 +1,4 @@
-const CACHE_NAME = "investment-blocker-web-v2";
+const CACHE_NAME = "investment-blocker-web-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,8 @@ const ASSETS = [
   "./app.js",
   "./manifest.webmanifest",
   "./icon.svg",
+  "./icon-192.png",
+  "./icon-512.png",
 ];
 
 self.addEventListener("install", (event) => {
