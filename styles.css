@@ -204,6 +204,16 @@ li {
   border: 1px solid rgba(146, 64, 14, 0.22);
 }
 
+.limit-box {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  border: 1px solid rgba(146, 64, 14, 0.24);
+  color: #4b2e05;
+  line-height: 1.6;
+}
+
 label {
   display: grid;
   gap: 6px;
@@ -289,6 +299,26 @@ summary {
 ol {
   margin: 0;
   padding-left: 22px;
+}
+
+.block-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.block-list code {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 14px;
+  word-break: break-all;
 }
 
 @media (min-width: 640px) {

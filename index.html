@@ -58,8 +58,12 @@
       </div>
     </section>
 
-    <section class="gate-panel" aria-label="투자 웹블럭">
+    <section class="gate-panel" aria-label="투자 웹 출입문">
       <h2>투자 출입문</h2>
+      <div class="limit-box">
+        이 기능은 <strong>이 웹 안에서 누르는 투자 링크</strong>를 잠급니다.
+        Chrome 주소창, 기존 북마크, 미래에셋 앱 아이콘을 직접 누르는 것은 Android 차단앱 권한이 필요합니다.
+      </div>
       <p id="gate-message" class="rule-text">허용 여부를 확인하고 있습니다.</p>
       <div id="destination-list" class="destination-list"></div>
       <p id="gate-feedback" class="feedback"></p>
@@ -140,6 +144,11 @@
         <li>해제 PIN은 집에 종이로 보관합니다.</li>
         <li>허용일에도 즉흥 매매가 아니라 30분 동안 천천히 점검만 합니다.</li>
       </ol>
+      <div class="block-list">
+        <strong>차단앱에 넣을 웹 주소</strong>
+        <code>securities.miraeasset.com</code>
+        <code>miraeasset.com</code>
+      </div>
     </section>
 
     <section class="guide-panel" aria-label="AppBlock 설정 순서">

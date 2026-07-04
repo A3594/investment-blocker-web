@@ -1,4 +1,4 @@
-const APP_VERSION = "2026.07.04.6";
+const APP_VERSION = "2026.07.04.7";
 
 const DEFAULT_SETTINGS = {
   baseDay: 1,
