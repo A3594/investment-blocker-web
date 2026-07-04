@@ -1,6 +1,8 @@
+const APP_VERSION = "2026.07.04.2";
+
 const DEFAULT_SETTINGS = {
   baseDay: 1,
-  windowMinutes: 10,
+  windowMinutes: 30,
   passphraseHash: "",
 };
 
@@ -294,7 +296,7 @@ function bindEvents() {
 
   $("save-settings").addEventListener("click", async () => {
     state.settings.baseDay = Math.max(1, Math.min(28, Number($("base-day-input").value) || 1));
-    state.settings.windowMinutes = Number($("window-minutes-input").value) || 10;
+    state.settings.windowMinutes = Number($("window-minutes-input").value) || 30;
     const phrase = $("passphrase-setting").value.trim();
     if (phrase) {
       state.settings.passphraseHash = await sha256(phrase);
@@ -316,9 +318,43 @@ function bindEvents() {
   });
 }
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+function setupServiceWorkerAutoUpdate() {
+  if (!("serviceWorker" in navigator)) return;
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("./service-worker.js");
+
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      }
+
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        if (!worker) return;
+
+        worker.addEventListener("statechange", () => {
+          if (worker.state === "installed" && navigator.serviceWorker.controller) {
+            worker.postMessage({ type: "SKIP_WAITING" });
+          }
+        });
+      });
+
+      await registration.update();
+    } catch {
+      // The app still works without service worker updates.
+    }
+  });
 }
+
+setupServiceWorkerAutoUpdate();
 
 bindEvents();
 render();
