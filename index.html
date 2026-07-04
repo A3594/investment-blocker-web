@@ -58,6 +58,13 @@
       </div>
     </section>
 
+    <section class="gate-panel" aria-label="투자 웹블럭">
+      <h2>투자 출입문</h2>
+      <p id="gate-message" class="rule-text">허용 여부를 확인하고 있습니다.</p>
+      <div id="destination-list" class="destination-list"></div>
+      <p id="gate-feedback" class="feedback"></p>
+    </section>
+
     <section class="calendar-panel" aria-label="앞으로의 허용일">
       <h2>앞으로 6개월 허용일</h2>
       <div id="month-list" class="month-list"></div>
@@ -104,6 +111,24 @@
         </div>
         <button id="add-holiday" class="ghost-button" type="button">휴일 추가</button>
         <div id="custom-holiday-list" class="holiday-list"></div>
+      </details>
+      <details>
+        <summary>차단할 투자 사이트</summary>
+        <div class="settings-grid">
+          <label>
+            이름
+            <input id="destination-name-input" type="text" placeholder="미래에셋, 증권 홈페이지 등" />
+          </label>
+          <label>
+            주소
+            <input id="destination-url-input" type="url" placeholder="https://..." />
+          </label>
+        </div>
+        <button id="add-destination" class="ghost-button" type="button">투자 사이트 추가</button>
+        <div id="destination-settings-list" class="holiday-list"></div>
+        <p class="setting-note">
+          이 목록은 이 웹 안에서 여는 투자 링크를 잠급니다. 미래에셋 앱 아이콘 자체를 막으려면 Android 차단앱 또는 별도 APK가 필요합니다.
+        </p>
       </details>
     </section>
 

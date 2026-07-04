@@ -92,6 +92,7 @@ li {
 .date-card,
 .today-card,
 .lock-panel,
+.gate-panel,
 .calendar-panel,
 .settings-panel,
 .guide-panel {
@@ -138,6 +139,7 @@ li {
 }
 
 .lock-panel,
+.gate-panel,
 .calendar-panel,
 .settings-panel,
 .guide-panel {
@@ -222,13 +224,15 @@ select {
 }
 
 .month-list,
-.holiday-list {
+.holiday-list,
+.destination-list {
   display: grid;
   gap: 8px;
 }
 
 .month-item,
-.holiday-item {
+.holiday-item,
+.destination-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -245,9 +249,24 @@ select {
 }
 
 .month-item span,
-.holiday-item span {
+.holiday-item span,
+.destination-item span {
   color: var(--muted);
   font-size: 13px;
+}
+
+.destination-item.locked {
+  background: var(--red-soft);
+  border-color: rgba(180, 35, 24, 0.22);
+}
+
+.destination-item.open {
+  background: var(--green-soft);
+  border-color: rgba(15, 118, 110, 0.24);
+}
+
+.destination-item button {
+  flex: 0 0 auto;
 }
 
 details + details {

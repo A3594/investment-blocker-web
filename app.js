@@ -1,10 +1,18 @@
-const APP_VERSION = "2026.07.04.4";
+const APP_VERSION = "2026.07.04.5";
 
 const DEFAULT_SETTINGS = {
   baseDay: 1,
   windowMinutes: 30,
   passphraseHash: "",
 };
+
+const DEFAULT_DESTINATIONS = [
+  {
+    id: "miraeasset-securities",
+    name: "미래에셋증권",
+    url: "https://securities.miraeasset.com/",
+  },
+];
 
 const BUILT_IN_HOLIDAYS = {
   "2026-01-01": "새해",
@@ -66,6 +74,7 @@ const BUILT_IN_HOLIDAYS = {
 const state = {
   settings: loadSettings(),
   customHolidays: loadCustomHolidays(),
+  destinations: loadDestinations(),
   installPrompt: null,
 };
 
@@ -93,6 +102,19 @@ function loadCustomHolidays() {
 
 function saveCustomHolidays() {
   localStorage.setItem("investmentBlockerCustomHolidays", JSON.stringify(state.customHolidays));
+}
+
+function loadDestinations() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("investmentBlockerDestinations") || "[]");
+    return saved.length ? saved : [...DEFAULT_DESTINATIONS];
+  } catch {
+    return [...DEFAULT_DESTINATIONS];
+  }
+}
+
+function saveDestinations() {
+  localStorage.setItem("investmentBlockerDestinations", JSON.stringify(state.destinations));
 }
 
 function ymd(date) {
@@ -173,6 +195,14 @@ function resetToday() {
   localStorage.removeItem(getUnlockUntilKey());
 }
 
+function getTodayStatus() {
+  const today = new Date();
+  const allowed = getAllowedDate(today.getFullYear(), today.getMonth());
+  const allowedToday = isSameDate(today, allowed.date);
+  const unlocked = getUnlockUntil() > Date.now();
+  return { today, allowed, allowedToday, unlocked };
+}
+
 function render() {
   const today = new Date();
   const allowed = getAllowedDate(today.getFullYear(), today.getMonth());
@@ -209,6 +239,8 @@ function render() {
   renderMonths(today);
   renderSettings();
   renderCustomHolidays();
+  renderDestinationGate();
+  renderDestinationSettings();
 }
 
 function renderMonths(today) {
@@ -257,6 +289,77 @@ function renderCustomHolidays() {
     item.appendChild(button);
     list.appendChild(item);
   });
+}
+
+function renderDestinationGate() {
+  const list = $("destination-list");
+  const feedback = $("gate-feedback");
+  const message = $("gate-message");
+  const { allowed, allowedToday, unlocked } = getTodayStatus();
+  const canOpen = allowedToday && unlocked;
+
+  feedback.textContent = "";
+  if (canOpen) {
+    message.textContent = `지금은 ${state.settings.windowMinutes}분 확인 시간이 열려 있습니다. 계획한 점검만 하고 닫습니다.`;
+  } else if (allowedToday) {
+    message.textContent = "오늘은 허용일이지만 아직 해제 문장을 입력하지 않았습니다. 먼저 확인 절차를 끝내세요.";
+  } else {
+    message.textContent = `오늘은 차단일입니다. 다음 허용일은 ${formatKoreanDate(allowed.date)}입니다.`;
+  }
+
+  list.innerHTML = "";
+  state.destinations.forEach((destination) => {
+    const item = document.createElement("div");
+    item.className = `destination-item ${canOpen ? "open" : "locked"}`;
+    item.innerHTML = `
+      <div>
+        <strong>${escapeHtml(destination.name)}</strong>
+        <span>${escapeHtml(destination.url)}</span>
+      </div>
+    `;
+    const button = document.createElement("button");
+    button.className = canOpen ? "primary-button" : "ghost-button";
+    button.type = "button";
+    button.textContent = canOpen ? "열기" : "차단됨";
+    button.dataset.destinationId = destination.id;
+    item.appendChild(button);
+    list.appendChild(item);
+  });
+}
+
+function renderDestinationSettings() {
+  const list = $("destination-settings-list");
+  list.innerHTML = "";
+  state.destinations.forEach((destination) => {
+    const item = document.createElement("div");
+    item.className = "holiday-item";
+    item.innerHTML = `<div><strong>${escapeHtml(destination.name)}</strong><span>${escapeHtml(destination.url)}</span></div>`;
+    const button = document.createElement("button");
+    button.className = "ghost-button";
+    button.type = "button";
+    button.textContent = "삭제";
+    button.dataset.deleteDestinationId = destination.id;
+    item.appendChild(button);
+    list.appendChild(item);
+  });
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function isValidHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
 }
 
 function bindEvents() {
@@ -329,6 +432,60 @@ function bindEvents() {
     $("holiday-date-input").value = "";
     $("holiday-name-input").value = "";
     saveCustomHolidays();
+    render();
+  });
+
+  $("destination-list").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-destination-id]");
+    if (!button) return;
+
+    const destination = state.destinations.find((item) => item.id === button.dataset.destinationId);
+    if (!destination) return;
+
+    const { allowed, allowedToday, unlocked } = getTodayStatus();
+    if (!allowedToday) {
+      $("gate-feedback").textContent = `차단했습니다. 다음 허용일은 ${formatKoreanDate(allowed.date)}입니다.`;
+      return;
+    }
+
+    if (!unlocked) {
+      $("gate-feedback").textContent = "오늘은 허용일입니다. 먼저 집에 보관한 해제 문장을 입력하세요.";
+      $("unlock-box").hidden = false;
+      $("passphrase-input").focus();
+      return;
+    }
+
+    window.open(destination.url, "_blank", "noopener");
+  });
+
+  $("add-destination").addEventListener("click", () => {
+    const name = $("destination-name-input").value.trim();
+    const url = $("destination-url-input").value.trim();
+
+    if (!name || !isValidHttpUrl(url)) {
+      $("gate-feedback").textContent = "투자 사이트 이름과 https:// 로 시작하는 주소를 입력하세요.";
+      return;
+    }
+
+    state.destinations.push({
+      id: `destination-${Date.now()}`,
+      name,
+      url,
+    });
+    $("destination-name-input").value = "";
+    $("destination-url-input").value = "";
+    saveDestinations();
+    render();
+  });
+
+  $("destination-settings-list").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-delete-destination-id]");
+    if (!button) return;
+    state.destinations = state.destinations.filter((item) => item.id !== button.dataset.deleteDestinationId);
+    if (!state.destinations.length) {
+      state.destinations = [...DEFAULT_DESTINATIONS];
+    }
+    saveDestinations();
     render();
   });
 }
