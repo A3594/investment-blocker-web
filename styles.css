@@ -152,6 +152,24 @@ li {
   margin-top: 14px;
 }
 
+.install-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.install-button {
+  min-height: 40px;
+}
+
+.install-help {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .primary-button,
 .ghost-button {
   min-height: 46px;

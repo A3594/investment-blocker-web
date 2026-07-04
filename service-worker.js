@@ -1,4 +1,4 @@
-const CACHE_NAME = "investment-blocker-web-v3";
+const CACHE_NAME = "investment-blocker-web-v4";
 const ASSETS = [
   "./",
   "./index.html",

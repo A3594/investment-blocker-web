@@ -1,4 +1,4 @@
-const APP_VERSION = "2026.07.04.3";
+const APP_VERSION = "2026.07.04.4";
 
 const DEFAULT_SETTINGS = {
   baseDay: 1,
@@ -66,6 +66,7 @@ const BUILT_IN_HOLIDAYS = {
 const state = {
   settings: loadSettings(),
   customHolidays: loadCustomHolidays(),
+  installPrompt: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -185,7 +186,7 @@ function render() {
   $("today-card").classList.toggle("blocked", !allowedToday);
 
   if (allowedToday && unlocked) {
-    $("status-pill").textContent = "10분 확인 허용 중";
+    $("status-pill").textContent = `${state.settings.windowMinutes}분 확인 허용 중`;
     $("today-status").textContent = "열 수 있음";
     $("today-message").textContent = `${Math.ceil(remainingMs / 60000)}분 뒤 자동으로 다시 잠김`;
     $("rule-text").textContent = "오늘은 월 1회 허용일이고, 해제 절차가 완료되었습니다. 매매 전 리밸런싱 계획만 확인하세요.";
@@ -193,8 +194,8 @@ function render() {
   } else if (allowedToday) {
     $("status-pill").textContent = "오늘만 허용일";
     $("today-status").textContent = "절차 필요";
-    $("today-message").textContent = "집에 보관한 문장 입력 후 10분만 확인";
-    $("rule-text").textContent = "오늘은 허용일입니다. 그래도 바로 열지 말고, 집에 보관한 문장으로 한 번 더 멈춘 뒤 10분만 확인하세요.";
+    $("today-message").textContent = `집에 보관한 문장 입력 후 ${state.settings.windowMinutes}분만 확인`;
+    $("rule-text").textContent = `오늘은 허용일입니다. 그래도 바로 열지 말고, 집에 보관한 문장으로 한 번 더 멈춘 뒤 ${state.settings.windowMinutes}분만 확인하세요.`;
     $("unlock-button").disabled = false;
   } else {
     $("status-pill").textContent = "차단일";
@@ -232,6 +233,7 @@ function renderMonths(today) {
 function renderSettings() {
   $("base-day-input").value = state.settings.baseDay;
   $("window-minutes-input").value = state.settings.windowMinutes;
+  $("confirm-button").textContent = `${state.settings.windowMinutes}분 확인 허용`;
 }
 
 function renderCustomHolidays() {
@@ -283,10 +285,23 @@ function bindEvents() {
       return;
     }
 
-    setUnlockUntil(Number(state.settings.windowMinutes) || 10);
+    setUnlockUntil(Number(state.settings.windowMinutes) || 30);
     $("passphrase-input").value = "";
     feedback.textContent = "확인 시간이 열렸습니다. 끝나면 다시 잠깁니다.";
     render();
+  });
+
+  $("install-button").addEventListener("click", async () => {
+    if (!state.installPrompt) {
+      $("install-help").textContent = "Chrome 오른쪽 위 ⋮ 메뉴에서 '앱 설치' 또는 '홈 화면에 추가'를 누르세요.";
+      return;
+    }
+
+    state.installPrompt.prompt();
+    const result = await state.installPrompt.userChoice;
+    state.installPrompt = null;
+    $("install-help").textContent =
+      result.outcome === "accepted" ? "설치가 시작되었습니다." : "설치를 취소했습니다. 필요하면 다시 메뉴에서 설치하세요.";
   });
 
   $("reset-button").addEventListener("click", () => {
@@ -315,6 +330,19 @@ function bindEvents() {
     $("holiday-name-input").value = "";
     saveCustomHolidays();
     render();
+  });
+}
+
+function setupInstallPrompt() {
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    state.installPrompt = event;
+    $("install-help").textContent = "설치 준비 완료. 버튼을 누르면 홈 화면에 추가됩니다.";
+  });
+
+  window.addEventListener("appinstalled", () => {
+    state.installPrompt = null;
+    $("install-help").textContent = "설치 완료. 다음 실행부터 자동 업데이트를 확인합니다.";
   });
 }
 
@@ -355,6 +383,7 @@ function setupServiceWorkerAutoUpdate() {
 }
 
 setupServiceWorkerAutoUpdate();
+setupInstallPrompt();
 
 bindEvents();
 render();
